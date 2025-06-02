@@ -1,0 +1,89 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cython debug symbols
+cython_debug/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+*.env
+
+# Conda environment files
+*.conda
+*.ipynb_checkpoints
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Pytest and coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+coverage.xml
+.cache
+.pytest_cache/
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+.settings/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Logs and dumps
+*.log
+*.out
+*.err
+*.pid
+
+# Local config
+*.env
+*.local
+*.secret
+secrets.env
+
+# MacOS / Linux / Windows system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python wheel and build
+*.whl
+MANIFEST
+
+# Test output
+test-results/
+
+# Profiler output
+*.prof
+*.lprof
+*.pstats
+
+# Notebook metadata
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp*
