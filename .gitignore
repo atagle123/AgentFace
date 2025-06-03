@@ -87,3 +87,9 @@ test-results/
 
 # Temporary files
 *.tmp*
+
+# Images extensions
+*.png
+*.jpg
+*.jpeg
+node_modules/

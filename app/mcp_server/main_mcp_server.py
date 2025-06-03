@@ -1,5 +1,6 @@
 from fastmcp import FastMCP
 from sub_servers.math_server import math_mcp
+from sub_servers.graphviz_server import graphviz_mcp
 import asyncio
 
 
@@ -14,6 +15,7 @@ main_mcp = FastMCP(
 # Import subserver
 async def setup():
     await main_mcp.import_server("sub_server", math_mcp)
+    await main_mcp.import_server("graphviz_server", graphviz_mcp)
 
 
 if __name__ == "__main__":

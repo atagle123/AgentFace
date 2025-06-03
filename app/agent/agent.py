@@ -1,10 +1,10 @@
-from smolagents import InferenceClientModel, TransformersModel, CodeAgent
+from smolagents import InferenceClientModel, TransformersModel, CodeAgent, LiteLLMModel
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 HF_TOKEN = os.getenv("HF_TOKEN")
-
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 class Agent:
     def __init__(self, model_id: str = "Qwen/Qwen2.5-Coder-32B-Instruct"):
@@ -19,10 +19,19 @@ class Agent:
         #      device="cuda",
         #      max_new_tokens=5000,
         #  )
-        self.model = InferenceClientModel(
-            model_id=model_id,
-            token=str(HF_TOKEN),
+        
+        self.model = LiteLLMModel(
+            model_id="openai/deepseek-r1-distill-llama-70b",
+            api_base="https://api.groq.com/openai/v1",
+            api_key=str(GROQ_API_KEY)
         )
+        self.model.flatten_messages_as_text = True
+        
+        # self.model = InferenceClientModel(
+        #     model_id=model_id,
+        #     token=str(HF_TOKEN),
+        # )
+        
         self.tools = []
 
     def add_tools(self, tools: list) -> None:
