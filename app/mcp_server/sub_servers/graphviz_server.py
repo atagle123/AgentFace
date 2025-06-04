@@ -3,7 +3,7 @@ import graphviz
 import base64
 import tempfile
 import os
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
 from datetime import datetime
 from pathlib import Path
 
@@ -36,6 +36,9 @@ def create_graphviz_diagram(
 
     Returns:
         str: Base64 encoded image data or file path to the generated diagram.
+    
+    Observations:
+        For the user show the path to the saved diagram if it was saved to the folder.
     """
     try:
         # Create graphviz object from source
@@ -96,11 +99,11 @@ def create_graphviz_diagram(
 
 @graphviz_mcp.tool()
 def create_simple_graph(
-    nodes: List[str],
+    nodes: List[Union[str, Dict[str, Any]]],
     edges: List[Dict[str, Any]],
     graph_type: str = "digraph",
     title: Optional[str] = None,
-    node_attrs: Optional[Dict[str, str]] = None,
+    node_attrs: Optional[Dict[str, Any]] = None,
     edge_attrs: Optional[Dict[str, str]] = None,
     output_format: str = "png",
     engine: str = "dot",
@@ -111,11 +114,11 @@ def create_simple_graph(
     Creates a simple graph from nodes and edges without requiring DOT notation knowledge.
 
     Args:
-        nodes (List[str]): List of node names.
+        nodes (List[Union[str, Dict]]): List of node names (strings) or node dictionaries with 'id', 'label', and optional attributes.
         edges (List[Dict[str, Any]]): List of edge dictionaries with 'from', 'to', and optional 'label' keys.
         graph_type (str): Type of graph ('graph' for undirected, 'digraph' for directed). Default is 'digraph'.
         title (Optional[str]): Optional title for the graph.
-        node_attrs (Optional[Dict[str, str]]): Default attributes for all nodes (e.g., {'shape': 'box', 'color': 'blue'}).
+        node_attrs (Optional[Dict]): Default attributes for all nodes OR per-node attributes with node IDs as keys.
         edge_attrs (Optional[Dict[str, str]]): Default attributes for all edges (e.g., {'color': 'red', 'style': 'dashed'}).
         output_format (str): Output format (png, svg, pdf, ps, dot). Default is 'png'.
         engine (str): Layout engine (dot, neato, fdp, sfdp, circo, twopi). Default is 'dot'.
@@ -124,6 +127,9 @@ def create_simple_graph(
 
     Returns:
         str: Base64 encoded image data of the generated diagram.
+        
+    Observations:
+        For the user show the path to the saved diagram if it was saved to the folder.
     """
     try:
         # Start building DOT source
@@ -134,9 +140,22 @@ def create_simple_graph(
             dot_lines.append(f'    label="{title}";')
             dot_lines.append('    labelloc="t";')
         
-        # Add default node attributes
+        # Handle node_attrs - check if it's default attrs or per-node attrs
+        default_node_attrs = None
+        per_node_attrs = {}
+        
         if node_attrs:
-            attrs_str = ', '.join([f'{k}="{v}"' for k, v in node_attrs.items()])
+            # Check if node_attrs contains node IDs (per-node) or general attributes (default)
+            if any(isinstance(v, dict) for v in node_attrs.values()):
+                # Per-node attributes
+                per_node_attrs = node_attrs
+            else:
+                # Default node attributes
+                default_node_attrs = node_attrs
+        
+        # Add default node attributes
+        if default_node_attrs:
+            attrs_str = ', '.join([f'{k}="{v}"' for k, v in default_node_attrs.items()])
             dot_lines.append(f'    node [{attrs_str}];')
         
         # Add default edge attributes
@@ -146,7 +165,24 @@ def create_simple_graph(
         
         # Add nodes
         for node in nodes:
-            dot_lines.append(f'    "{node}";')
+            if isinstance(node, str):
+                # Simple string node
+                node_id = node
+                node_label = node
+                node_specific_attrs = per_node_attrs.get(node_id, {})
+            else:
+                # Dictionary node
+                node_id = node.get('id', node.get('label', ''))
+                node_label = node.get('label', node_id)
+                # Merge node-specific attributes from per_node_attrs and node dict
+                node_specific_attrs = {**per_node_attrs.get(node_id, {}), 
+                                     **{k: v for k, v in node.items() if k not in ['id', 'label']}}
+            
+            if node_specific_attrs:
+                attrs_str = ', '.join([f'{k}="{v}"' for k, v in node_specific_attrs.items()])
+                dot_lines.append(f'    "{node_id}" [label="{node_label}", {attrs_str}];')
+            else:
+                dot_lines.append(f'    "{node_id}" [label="{node_label}"];')
         
         # Add edges
         connector = " -> " if graph_type == "digraph" else " -- "
@@ -207,6 +243,9 @@ def create_flowchart(
 
     Returns:
         str: Base64 encoded image data of the generated flowchart.
+    
+    Observations:
+        For the user show the path to the saved diagram if it was saved to the folder.
     """
     try:
         # Start building DOT source for flowchart
@@ -336,3 +375,41 @@ def delete_diagram(filename: str) -> str:
         
     except Exception as e:
         return f"Error deleting diagram: {str(e)}"
+    
+    
+@graphviz_mcp.tool()
+def diagram_documentation() -> str:
+    """
+    Returns the documentation for the Graphviz MCP server tools and which diagrams you can make.
+
+    Returns:
+        str: Documentation string.
+    """
+    return """
+    ## Graphviz MCP Server Documentation
+
+    This server provides tools for creating and managing Graphviz diagrams.
+
+    ### Tools
+
+    - **create_diagram**: Creates a Graphviz diagram from DOT source or structured data.
+    - **create_preset_diagram**: Creates a diagram using predefined presets.
+    - **list_saved_diagrams**: Lists all saved diagrams in the diagrams folder.
+    - **delete_diagram**: Deletes a specific diagram from the diagrams folder.
+
+    ### Diagram Formats
+
+    Supported output formats for diagrams include: PNG, SVG, PDF, PS, DOT.
+
+    ### Usage
+
+    To use any of the tools, send a request to the corresponding endpoint with the required parameters.
+    
+    ### Diagram Types
+    You can create various types of diagrams including:
+    - Flowcharts
+    - Directed and undirected graphs
+    - Simple graphs with nodes and edges
+    - Custom diagrams using DOT notation
+    - And more, depending on the parameters you provide.
+    """

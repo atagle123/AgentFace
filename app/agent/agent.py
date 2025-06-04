@@ -47,7 +47,7 @@ class Agent:
         """
         Sets up the CodeAgent with the current tools and model.
         """
-        self.agent = CodeAgent(tools=self.tools, model=self.model)
+        self.agent = CodeAgent(tools=self.tools, model=self.model, additional_authorized_imports=["manim.*", "manim.mobject", "manim.animation", "numpy"])
 
     def __call__(self, prompt: str):
         """
