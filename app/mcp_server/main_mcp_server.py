@@ -15,7 +15,7 @@ main_mcp = FastMCP(
 
 # Import subserver
 async def setup():
-    await main_mcp.import_server("sub_server", math_mcp)
+    await main_mcp.import_server("math_server", math_mcp)
     await main_mcp.import_server("graphviz_server", graphviz_mcp)
     await main_mcp.import_server("manim_server", manim_mcp)
 
